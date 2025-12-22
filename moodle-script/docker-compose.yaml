@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: public.ecr.aws/bitnami/mariadb:latest
+    container_name: moodle_db
+    restart: unless-stopped
+    environment:
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD:-yourRootPass}
+      - MARIADB_DATABASE=${MOODLE_DATABASE_NAME:-bitnami_moodle}
+      - MARIADB_USER=${MOODLE_DATABASE_USER:-bn_moodle}
+      - MARIADB_PASSWORD=${MOODLE_DATABASE_PASSWORD:-moodleDBpass}
+      - MARIADB_CHARACTER_SET=utf8mb4
+      - MARIADB_COLLATE=utf8mb4_unicode_ci
+      - ALLOW_EMPTY_PASSWORD=no
+    volumes:
+      - mariadb_data:/bitnami/mariadb
+    networks:
+      - moodle_net
+
+  moodle:
+    image: public.ecr.aws/bitnami/moodle:4.2.7-debian-12-r1
+    container_name: moodle_app
+    restart: unless-stopped
+    ports:
+      - "${MOODLE_HTTP_PORT:-8080}:8080"
+      - "${MOODLE_HTTPS_PORT:-8443}:8443"
+    depends_on:
+      - mariadb
+    environment:
+      # Database configuration
+      - MOODLE_DATABASE_HOST=mariadb
+      - MOODLE_DATABASE_PORT_NUMBER=3306
+      - MOODLE_DATABASE_USER=${MOODLE_DATABASE_USER:-bn_moodle}
+      - MOODLE_DATABASE_PASSWORD=${MOODLE_DATABASE_PASSWORD:-moodleDBpass}
+      - MOODLE_DATABASE_NAME=${MOODLE_DATABASE_NAME:-bitnami_moodle}
+      
+      # Site setup
+      - MOODLE_USERNAME=${MOODLE_ADMIN_USER:-admin}
+      - MOODLE_PASSWORD=${MOODLE_ADMIN_PASSWORD:-strongAdminPass}
+      - MOODLE_EMAIL=${MOODLE_ADMIN_EMAIL:-admin@example.com}
+      - MOODLE_SITE_NAME=${MOODLE_SITE_NAME:-"My Moodle Site"}
+      - TZ=${TZ:-UTC}
+      - BITNAMI_DEBUG=${BITNAMI_DEBUG:-false}
+    volumes:
+      - moodle_data:/bitnami/moodle
+      - moodle_data_extra:/bitnami/moodledata
+    networks:
+      - moodle_net
+
+volumes:
+  mariadb_data:
+    driver: local
+  moodle_data:
+    driver: local
+  moodle_data_extra:
+    driver: local
+
+networks:
+  moodle_net:
+    driver: bridge

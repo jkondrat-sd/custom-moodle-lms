@@ -1,0 +1,24 @@
+# 1. Local tool directories (Huge folders, recreated with 'terraform init')
+.terraform/
+
+# 2. State files (Highly sensitive, contains plain-text secrets and infra mapping)
+*.tfstate
+*.tfstate.*
+
+# 3. Crash logs (Generated only during errors)
+crash.log
+crash.*.log
+
+# 4. Local variables (Often contain secrets like passwords/API keys)
+*.tfvars
+*.tfvars.json
+
+# 5. Override files (Local tweaks that shouldn't affect others)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# 6. CLI configuration (Local user settings)
+.terraformrc
+terraform.rc
